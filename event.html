@@ -5,25 +5,26 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Nearby Now - Event Details</title>
   <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
 </head>
 <body class="bg-green-50 min-h-screen">
   <!-- Navbar -->
   <nav class="bg-white shadow-sm py-4 px-8 flex items-center justify-between">
     <div class="flex items-center gap-2">
-      <div class="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center">
-        <svg width="28" height="28" fill="none" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" fill="#A7F3D0"/><path d="M7 12h10M7 16h10M7 8h10" stroke="#34D399" stroke-width="2" stroke-linecap="round"/></svg>
+      <div class="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center overflow-hidden">
+        <img src="images/LOGO.png" alt="Nearby Now Logo" class="w-10 h-10 object-contain" />
       </div>
       <span class="text-2xl font-semibold text-gray-800">Nearby Now</span>
     </div>
-    <div class="flex items-center gap-8">
-      <a href="home.html" class="text-gray-700 font-medium hover:text-green-700">Home</a>
-      <a href="register.html" class="text-gray-700 font-medium hover:text-green-700">Register</a>
-      <a href="login.html" class="text-gray-700 font-medium hover:text-green-700">Login</a>
-      <a href="#" class="text-gray-700 font-medium hover:text-green-700">My Events</a>
-      <button class="flex items-center gap-2 bg-green-100 px-4 py-2 rounded-md hover:bg-green-200 transition">
-        <svg class="w-5 h-5 text-green-700" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35" stroke-linecap="round"/></svg>
-        <span class="text-green-700 font-medium">My Events</span>
-      </button>
+    <div class="flex items-center gap-8" id="navbar-links">
+      <a href="home.html" class="text-gray-700 font-medium hover:text-green-700" id="nav-home">Home</a>
+      <a href="register.html" id="nav-register" class="text-gray-700 font-medium hover:text-green-700">Register</a>
+      <a href="login.html" id="nav-login" class="text-gray-700 font-medium hover:text-green-700">Login</a>
+      <a href="my-event.html" id="nav-my-events" class="text-gray-700 font-medium hover:text-green-700">My Events</a>
+      <a href="registered-events.html" id="nav-registered-events" class="text-gray-700 font-medium hover:text-green-700">Registered Events</a>
+      <a href="add-event.html" id="nav-add-event" class="text-gray-700 font-medium hover:text-green-700" style="display:none">Add New Event</a>
+      <a href="#" id="nav-logout" class="text-gray-700 font-medium hover:text-green-700" style="display:none">Logout</a>
+      <!-- Dashboard link will be injected by JS for admin users -->
     </div>
   </nav>
 
@@ -33,10 +34,13 @@
       <img id="event-img" src="" alt="Event" class="rounded-xl w-full h-64 object-cover mb-6">
       <h2 id="event-title" class="text-2xl font-bold mb-2"></h2>
       <p id="event-desc" class="mb-6 text-gray-700"></p>
-      <form class="bg-green-50 rounded-xl p-6 flex flex-col gap-4 max-w-md">
-        <input type="text" placeholder="Name" class="px-3 py-2 border border-green-100 rounded-md focus:outline-none focus:ring-2 focus:ring-green-200">
-        <input type="email" placeholder="Email" class="px-3 py-2 border border-green-100 rounded-md focus:outline-none focus:ring-2 focus:ring-green-200">
+      <form id="event-registration-form" class="bg-green-50 rounded-xl p-6 flex flex-col gap-4 max-w-md">
+        <input id="reg-name" type="text" placeholder="Name" class="px-3 py-2 border border-green-100 rounded-md focus:outline-none focus:ring-2 focus:ring-green-200">
+        <input id="reg-email" type="email" placeholder="Email" class="px-3 py-2 border border-green-100 rounded-md focus:outline-none focus:ring-2 focus:ring-green-200">
         <button type="submit" class="bg-green-400 hover:bg-green-500 text-white font-semibold py-2 rounded-md transition">Register</button>
+        <div id="reg-success" class="hidden text-green-700 text-center font-medium mt-2">Registration successful!</div>
+        <div id="reg-error" class="hidden text-red-600 text-center font-medium mt-2"></div>
+        <div id="reg-already" class="hidden text-green-700 text-center font-medium mt-2">You have already registered for this event with this email.</div>
       </form>
     </div>
     <!-- Right: Details -->
@@ -45,7 +49,8 @@
         <h3 id="event-title-side" class="text-xl font-bold mb-2"></h3>
         <div id="event-date" class="text-gray-700 mb-2"></div>
         <div class="mb-4">
-          <img id="event-map" src="https://maps.googleapis.com/maps/api/staticmap?center=0,0&zoom=15&size=400x150&key=YOUR_API_KEY" alt="Map" class="rounded-md w-full h-28 object-cover">
+          <!-- <img id="event-map" src="https://maps.googleapis.com/maps/api/staticmap?center=0,0&zoom=15&size=400x150&key=AIzaSyCP8vHtWrFIS1Z4m3P24lMp8I5-z31tNSY" alt="Map" class="rounded-md w-full h-28 object-cover"> -->
+          <div id="event-leaflet-map" style="height:180px; width:100%; border-radius:0.5rem;"></div>
         </div>
         <div class="mb-4">
           <h4 class="font-semibold">Description</h4>
@@ -57,6 +62,13 @@
             <svg class="w-4 h-4" fill="none" stroke="#34D399" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/></svg>
             <span id="event-organizer">Organizer</span>
           </span>
+        </div>
+        <div class="mb-4">
+          <h4 class="font-semibold">Registration Dates</h4>
+          <div class="text-gray-700 text-sm">
+            <span id="event-registration-start"></span><br>
+            <span id="event-registration-end"></span>
+          </div>
         </div>
       </div>
       <div class="bg-white rounded-xl shadow-md p-6">
@@ -72,10 +84,12 @@
     // Get event id from URL
     const params = new URLSearchParams(window.location.search);
     const eventId = params.get('id');
+    let currentEvent = null;
     fetch('events.json')
       .then(res => res.json())
       .then(events => {
         const event = events.find(e => e.id === eventId);
+        currentEvent = event;
         if (!event) return;
         document.getElementById('event-img').src = event.photos && event.photos.length ? event.photos[0] : 'https://images.unsplash.com/photo-1464983953574-0892a716854b?auto=format&fit=crop&w=400&q=80';
         document.getElementById('event-title').textContent = event.title;
@@ -89,14 +103,184 @@
         document.getElementById('event-date').textContent = dateStr;
         // Map
         if (event.lat && event.lng) {
-          document.getElementById('event-map').src = `https://maps.googleapis.com/maps/api/staticmap?center=${event.lat},${event.lng}&zoom=15&size=400x150&markers=color:green%7C${event.lat},${event.lng}&key=YOUR_API_KEY`;
+          // document.getElementById('event-map').src = ... (commented out)
+          const leafletMap = L.map('event-leaflet-map').setView([event.lat, event.lng], 13);
+          L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            maxZoom: 19,
+          }).addTo(leafletMap);
+          L.marker([event.lat, event.lng]).addTo(leafletMap)
+            .bindPopup(`<strong>${event.title}</strong><br>Lat: ${event.lat}, Lon: ${event.lng}`)
+            .openPopup();
+        } else {
+          document.getElementById('event-leaflet-map').style.display = 'none';
         }
         // Organizer
         document.getElementById('event-organizer').textContent = event.created_by || 'Organizer';
         document.getElementById('event-organizer-info').textContent = event.created_by || 'Organizer';
         document.getElementById('event-status').textContent = event.approved ? 'Approved' : 'Pending';
         document.getElementById('event-status').className = event.approved ? 'text-green-600 font-medium' : 'text-yellow-600 font-medium';
+        // Registration Dates
+        if (event.registration_start) {
+          const regStart = new Date(event.registration_start);
+          document.getElementById('event-registration-start').textContent = 'Registration Start: ' + regStart.toLocaleDateString() + ' ' + regStart.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        }
+        if (event.registration_end) {
+          const regEnd = new Date(event.registration_end);
+          document.getElementById('event-registration-end').textContent = 'Registration End: ' + regEnd.toLocaleDateString() + ' ' + regEnd.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        }
       });
+
+    // Registration form logic
+    function checkAlreadyRegistered() {
+      const emailInput = document.getElementById('reg-email');
+      const registerBtn = document.querySelector('#event-registration-form button[type="submit"]');
+      const alreadyMsg = document.getElementById('reg-already');
+      const nameInput = document.getElementById('reg-name');
+      if (!currentEvent) return;
+      let regEvents = [];
+      if (localStorage.getItem('registered_events')) {
+        regEvents = JSON.parse(localStorage.getItem('registered_events'));
+      }
+      // Check if already registered for this event with this email
+      const email = emailInput.value.trim();
+      const already = regEvents.some(ev => ev.id === currentEvent.id && ev.registered_email === email);
+      if (already) {
+        registerBtn.disabled = true;
+        registerBtn.classList.add('opacity-60', 'cursor-not-allowed');
+        alreadyMsg.classList.remove('hidden');
+      } else {
+        registerBtn.disabled = false;
+        registerBtn.classList.remove('opacity-60', 'cursor-not-allowed');
+        alreadyMsg.classList.add('hidden');
+      }
+    }
+    document.getElementById('reg-email').addEventListener('input', checkAlreadyRegistered);
+    document.getElementById('reg-name').addEventListener('input', checkAlreadyRegistered);
+
+    document.getElementById('event-registration-form').onsubmit = function(e) {
+      e.preventDefault();
+      const name = document.getElementById('reg-name').value.trim();
+      const email = document.getElementById('reg-email').value.trim();
+      const successMsg = document.getElementById('reg-success');
+      const errorMsg = document.getElementById('reg-error');
+      successMsg.classList.add('hidden');
+      errorMsg.classList.add('hidden');
+      // Validate
+      if (!name || !email || !/^\S+@\S+\.\S+$/.test(email)) {
+        errorMsg.textContent = 'Please enter a valid name and email.';
+        errorMsg.classList.remove('hidden');
+        return;
+      }
+      if (!currentEvent) {
+        errorMsg.textContent = 'Event not found.';
+        errorMsg.classList.remove('hidden');
+        return;
+      }
+      // Prepare registration object
+      const regData = {
+        ...currentEvent,
+        registered_name: name,
+        registered_email: email,
+        registered_at: new Date().toISOString()
+      };
+      // Save to localStorage
+      let regEvents = [];
+      if (localStorage.getItem('registered_events')) {
+        regEvents = JSON.parse(localStorage.getItem('registered_events'));
+      }
+      // Prevent duplicate registration for same event and email
+      const duplicate = regEvents.some(ev => ev.id === regData.id && ev.registered_email === regData.registered_email);
+      if (duplicate) {
+        checkAlreadyRegistered();
+        errorMsg.textContent = 'You have already registered for this event with this email.';
+        errorMsg.classList.remove('hidden');
+        return;
+      }
+      regEvents.push(regData);
+      localStorage.setItem('registered_events', JSON.stringify(regEvents));
+      // Save to registered-events.json (simulate by POST if backend, here just fetch and append)
+      fetch('registered-events.json')
+        .then(r => r.json())
+        .then(json => {
+          json.push(regData);
+          // In a real app, POST to backend. Here, just log for demo.
+          // fetch('registered-events.json', { method: 'POST', body: JSON.stringify(regData) })
+          // For demo, show success
+          successMsg.classList.remove('hidden');
+        })
+        .catch(() => {
+          // If file not found or error, still show success (since localStorage is main store)
+          successMsg.classList.remove('hidden');
+        });
+      // Optionally, clear form
+      document.getElementById('event-registration-form').reset();
+      checkAlreadyRegistered();
+    };
+    function updateNavbar() {
+      const isLoggedIn = !!localStorage.getItem('users_logged_in');
+      const navRegister = document.getElementById('nav-register');
+      const navLogin = document.getElementById('nav-login');
+      const navRegisteredEvents = document.getElementById('nav-registered-events');
+      const navAddEvent = document.getElementById('nav-add-event');
+      const navLogout = document.getElementById('nav-logout');
+      if (isLoggedIn) {
+        if (navRegister) navRegister.style.display = 'none';
+        if (navLogin) navLogin.style.display = 'none';
+        if (navRegisteredEvents) navRegisteredEvents.style.display = '';
+        if (navAddEvent) navAddEvent.style.display = '';
+        if (navLogout) navLogout.style.display = '';
+      } else {
+        if (navRegister) navRegister.style.display = '';
+        if (navLogin) navLogin.style.display = '';
+        if (navRegisteredEvents) navRegisteredEvents.style.display = 'none';
+        if (navAddEvent) navAddEvent.style.display = 'none';
+        if (navLogout) navLogout.style.display = 'none';
+      }
+    }
+    function showAdminDashboardLink() {
+      const navbar = document.getElementById('navbar-links');
+      if (!navbar) return;
+      if (document.getElementById('nav-dashboard')) return; // Prevent duplicate
+      const role = localStorage.getItem('role');
+      if (role === 'admin') {
+        const dash = document.createElement('a');
+        dash.href = 'admin.html';
+        dash.id = 'nav-dashboard';
+        dash.className = 'text-gray-700 font-medium hover:text-green-700';
+        dash.textContent = 'Dashboard';
+        navbar.appendChild(dash);
+      }
+    }
+    window.addEventListener('DOMContentLoaded', function() {
+      updateNavbar();
+      showAdminDashboardLink();
+      const navLogout = document.getElementById('nav-logout');
+      if (navLogout) {
+        navLogout.onclick = function(e) {
+          e.preventDefault();
+          localStorage.removeItem('users_logged_in');
+          window.location.href = 'login.html';
+        };
+      }
+      // Highlight nav for event page
+      const navLinks = document.querySelectorAll('#navbar-links a');
+      navLinks.forEach(link => {
+        if (link.getAttribute('href') && window.location.pathname.endsWith(link.getAttribute('href'))) {
+          link.classList.add('text-green-700', 'font-bold', 'underline');
+        }
+      });
+      // Add already registered message element if not present
+      if (!document.getElementById('reg-already')) {
+        const btn = document.querySelector('#event-registration-form button[type="submit"]');
+        const alreadyMsg = document.createElement('div');
+        alreadyMsg.id = 'reg-already';
+        alreadyMsg.className = 'hidden text-green-700 text-center font-medium mt-2';
+        alreadyMsg.textContent = 'You have already registered for this event with this email.';
+        btn.parentNode.insertBefore(alreadyMsg, btn.nextSibling);
+      }
+      checkAlreadyRegistered();
+    });
   </script>
+  <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
 </body>
 </html>

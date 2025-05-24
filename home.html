@@ -10,23 +10,20 @@
   <!-- Navbar -->
   <nav class="bg-white shadow-sm py-4 px-8 flex items-center justify-between">
     <div class="flex items-center gap-2">
-      <div class="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center">
-        <svg width="28" height="28" fill="none" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" fill="#A7F3D0"/><path d="M7 12h10M7 16h10M7 8h10" stroke="#34D399" stroke-width="2" stroke-linecap="round"/></svg>
+      <div class="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center overflow-hidden">
+        <img src="images/LOGO.png" alt="Nearby Now Logo" class="w-10 h-10 object-contain" />
       </div>
       <span class="text-2xl font-semibold text-gray-800">Nearby Now</span>
     </div>
-    <div class="flex items-center gap-8">
-      <a href="#" id="nav-home" class="text-gray-700 font-medium hover:text-green-700">Home</a>
-      <a href="#" id="nav-register" class="text-gray-700 font-medium hover:text-green-700">Register</a>
-      <a href="#" id="nav-login" class="text-gray-700 font-medium hover:text-green-700">Login</a>
-      <a href="#" class="text-gray-700 font-medium hover:text-green-700">My Events</a>
-      <button class="flex items-center gap-2 bg-green-100 px-4 py-2 rounded-md hover:bg-green-200 transition">
-        <svg class="w-5 h-5 text-green-700" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35" stroke-linecap="round"/></svg>
-        <span class="text-green-700 font-medium">Search</span>
-      </button>
-      <div class="ml-2">
-        <svg class="w-7 h-7 text-green-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" stroke="#34D399" stroke-width="2"/><path d="M12 8v4l3 3" stroke="#34D399" stroke-width="2" stroke-linecap="round"/></svg>
-      </div>
+    <div class="flex items-center gap-8" id="navbar-links">
+      <a href="home.html" class="text-green-700 font-bold underline" id="nav-home">Home</a>
+      <a href="register.html" id="nav-register" class="text-gray-700 font-medium hover:text-green-700">Register</a>
+      <a href="login.html" id="nav-login" class="text-gray-700 font-medium hover:text-green-700">Login</a>
+      <a href="my-event.html" id="nav-my-events" class="text-gray-700 font-medium hover:text-green-700">My Events</a>
+      <a href="registered-events.html" id="nav-registered-events" class="text-gray-700 font-medium hover:text-green-700">Registered Events</a>
+      <a href="add-event.html" id="nav-add-event" class="text-gray-700 font-medium hover:text-green-700" style="display:none">Add New Event</a>
+      <a href="#" id="nav-logout" class="text-gray-700 font-medium hover:text-green-700" style="display:none">Logout</a>
+      <!-- Dashboard link will be injected by JS for admin users -->
     </div>
   </nav>
 
@@ -43,42 +40,117 @@
     </div>
   </div>
   <script>
-  fetch('events.json')
-    .then(res => res.json())
-    .then(events => {
-      const grid = document.querySelector('.grid');
-      grid.innerHTML = '';
-      events.filter(e => e.approved && e.status === 'active').forEach(event => {
-        const img = event.photos && event.photos.length ? event.photos[0] : 'https://images.unsplash.com/photo-1464983953574-0892a716854b?auto=format&fit=crop&w=400&q=80';
-        const date = new Date(event.start_time);
-        const dateStr = date.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
-        const card = document.createElement('div');
-        card.className = 'bg-white rounded-xl shadow-md overflow-hidden cursor-pointer hover:shadow-lg transition';
-        card.onclick = () => window.location.href = `event.html?id=${event.id}`;
-        card.innerHTML = `
-          <img src="${img}" alt="${event.title}" class="w-full h-40 object-cover">
-          <div class="p-4">
-            <h3 class="text-lg font-semibold mb-1">${event.title}</h3>
-            <p class="text-sm text-gray-500">${dateStr}</p>
-            <div class="flex items-center gap-2 mt-2">
-              <span class="bg-green-50 text-green-700 px-3 py-1 rounded-full text-sm flex items-center gap-1">
-                <svg class='w-4 h-4' fill='none' stroke='#34D399' stroke-width='2' viewBox='0 0 24 24'><circle cx='12' cy='12' r='10'/></svg>
-                ${event.category}
-              </span>
-            </div>
+  // fetch('events.json')
+  //   .then(res => res.json())
+  //   .then(events => {
+  //     const grid = document.querySelector('.grid');
+  //     grid.innerHTML = '';
+  //     events.filter(e => e.approved && e.status === 'active').forEach(event => {
+  //       const img = event.photos && event.photos.length ? event.photos[0] : 'https://images.unsplash.com/photo-1464983953574-0892a716854b?auto=format&fit=crop&w=400&q=80';
+  //       const date = new Date(event.start_time);
+  //       const dateStr = date.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
+  //       const card = document.createElement('div');
+  //       card.className = 'bg-white rounded-xl shadow-md overflow-hidden cursor-pointer hover:shadow-lg transition';
+  //       card.onclick = () => window.location.href = `event.html?id=${event.id}`;
+  //       card.innerHTML = `
+  //         <img src="${img}" alt="${event.title}" class="w-full h-40 object-cover">
+  //         <div class="p-4">
+  //           <h3 class="text-lg font-semibold mb-1">${event.title}</h3>
+  //           <p class="text-sm text-gray-500">${dateStr}</p>
+  //           <div class="flex items-center gap-2 mt-2">
+  //             <span class="bg-green-50 text-green-700 px-3 py-1 rounded-full text-sm flex items-center gap-1">
+  //               <svg class='w-4 h-4' fill='none' stroke='#34D399' stroke-width='2' viewBox='0 0 24 24'><circle cx='12' cy='12' r='10'/></svg>
+  //               ${event.category}
+  //             </span>
+  //           </div>
+  //         </div>
+  //       `;
+  //       grid.appendChild(card);
+  //     });
+  //   });
+
+  // Fetch events from localStorage instead
+  document.addEventListener('DOMContentLoaded', function() {
+    const grid = document.querySelector('.grid');
+    grid.innerHTML = '';
+    let events = [];
+    if (localStorage.getItem('events')) {
+      events = JSON.parse(localStorage.getItem('events'));
+    }
+    events.filter(e => e.approved && e.status === 'active').forEach(event => {
+      const img = event.photos && event.photos.length ? event.photos[0] : 'https://images.unsplash.com/photo-1464983953574-0892a716854b?auto=format&fit=crop&w=400&q=80';
+      const date = new Date(event.start_time);
+      const dateStr = date.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
+      const card = document.createElement('div');
+      card.className = 'bg-white rounded-xl shadow-md overflow-hidden cursor-pointer hover:shadow-lg transition';
+      card.onclick = () => window.location.href = `event.html?id=${event.id}`;
+      card.innerHTML = `
+        <img src="${img}" alt="${event.title}" class="w-full h-40 object-cover">
+        <div class="p-4">
+          <h3 class="text-lg font-semibold mb-1">${event.title}</h3>
+          <p class="text-sm text-gray-500">${dateStr}</p>
+          <div class="flex items-center gap-2 mt-2">
+            <span class="bg-green-50 text-green-700 px-3 py-1 rounded-full text-sm flex items-center gap-1">
+              <svg class='w-4 h-4' fill='none' stroke='#34D399' stroke-width='2' viewBox='0 0 24 24'><circle cx='12' cy='12' r='10'/></svg>
+              ${event.category}
+            </span>
           </div>
-        `;
-        grid.appendChild(card);
-      });
+        </div>
+      `;
+      grid.appendChild(card);
+    });
+  });
+
+    function updateNavbar() {
+      const isLoggedIn = !!localStorage.getItem('users_logged_in');
+      const navRegister = document.getElementById('nav-register');
+      const navLogin = document.getElementById('nav-login');
+      const navRegisteredEvents = document.getElementById('nav-registered-events');
+      const navAddEvent = document.getElementById('nav-add-event');
+      const navLogout = document.getElementById('nav-logout');
+      if (isLoggedIn) {
+        if (navRegister) navRegister.style.display = 'none';
+        if (navLogin) navLogin.style.display = 'none';
+        if (navRegisteredEvents) navRegisteredEvents.style.display = '';
+        if (navAddEvent) navAddEvent.style.display = '';
+        if (navLogout) navLogout.style.display = '';
+      } else {
+        if (navRegister) navRegister.style.display = '';
+        if (navLogin) navLogin.style.display = '';
+        if (navRegisteredEvents) navRegisteredEvents.style.display = 'none';
+        if (navAddEvent) navAddEvent.style.display = 'none';
+        if (navLogout) navLogout.style.display = 'none';
+      }
+    }
+    window.addEventListener('DOMContentLoaded', function() {
+      updateNavbar();
+      const navLogout = document.getElementById('nav-logout');
+      if (navLogout) {
+        navLogout.onclick = function(e) {
+          e.preventDefault();
+          localStorage.removeItem('users_logged_in');
+          window.location.href = 'login.html';
+        };
+      }
     });
 
-    // Hide Register/Login if user is logged in
-    window.addEventListener('DOMContentLoaded', function() {
+    function showAdminDashboardLink() {
+      const navbar = document.getElementById('navbar-links');
+      if (!navbar) return;
+      if (document.getElementById('nav-dashboard')) return; // Prevent duplicate
       const role = localStorage.getItem('role');
-      if (role) {
-        document.getElementById('nav-register').style.display = 'none';
-        document.getElementById('nav-login').style.display = 'none';
+      if (role === 'admin') {
+        const dash = document.createElement('a');
+        dash.href = 'admin.html';
+        dash.id = 'nav-dashboard';
+        dash.className = 'text-gray-700 font-medium hover:text-green-700';
+        dash.textContent = 'Dashboard';
+        navbar.appendChild(dash);
       }
+    }
+    document.addEventListener('DOMContentLoaded', function() {
+      // ...existing code...
+      showAdminDashboardLink();
     });
   </script>
 </body>

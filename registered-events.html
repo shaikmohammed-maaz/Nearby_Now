@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Nearby Now - Registered Events</title>
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+</head>
+<body class="bg-green-50 min-h-screen">
+  <nav class="bg-white shadow-sm py-4 px-8 flex items-center justify-between sticky top-0 z-50">
+    <div class="flex items-center gap-2">
+      <div class="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center overflow-hidden">
+        <img src="images/LOGO.png" alt="Nearby Now Logo" class="w-10 h-10 object-contain" />
+      </div>
+      <span class="text-2xl font-semibold text-gray-800">Nearby Now</span>
+    </div>
+    <div class="flex items-center gap-8" id="navbar-links">
+      <a href="home.html" class="text-gray-700 font-medium hover:text-green-700" id="nav-home">Home</a>
+      <a href="register.html" id="nav-register" class="text-gray-700 font-medium hover:text-green-700">Register</a>
+      <a href="login.html" id="nav-login" class="text-gray-700 font-medium hover:text-green-700">Login</a>
+      <a href="my-event.html" id="nav-my-events" class="text-gray-700 font-medium hover:text-green-700">My Events</a>
+      <a href="registered-events.html" id="nav-registered-events" class="text-gray-700 font-medium hover:text-green-700">Registered Events</a>
+      <a href="add-event.html" id="nav-add-event" class="text-gray-700 font-medium hover:text-green-700" style="display:none">Add New Event</a>
+      <a href="#" id="nav-logout" class="text-gray-700 font-medium hover:text-green-700" style="display:none">Logout</a>
+      <!-- Dashboard link will be injected by JS for admin users -->
+    </div>
+  </nav>
+  <div class="max-w-6xl mx-auto mt-12 mb-8">
+    <h2 class="text-3xl font-extrabold text-green-800 mb-8 text-center">My Registered Events</h2>
+    <div id="events-list" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"></div>
+    <div id="no-events" class="hidden text-center text-gray-500 text-lg mt-16">
+      <img src="https://cdn-icons-png.flaticon.com/512/4076/4076549.png" alt="No events" class="mx-auto mb-4 w-24 h-24 opacity-60">
+      No registered events found.
+    </div>
+  </div>
+  <script>
+    function updateNavbar() {
+      const isLoggedIn = !!localStorage.getItem('users_logged_in');
+      const navRegister = document.getElementById('nav-register');
+      const navLogin = document.getElementById('nav-login');
+      const navRegisteredEvents = document.getElementById('nav-registered-events');
+      const navAddEvent = document.getElementById('nav-add-event');
+      const navLogout = document.getElementById('nav-logout');
+      if (isLoggedIn) {
+        if (navRegister) navRegister.style.display = 'none';
+        if (navLogin) navLogin.style.display = 'none';
+        if (navRegisteredEvents) navRegisteredEvents.style.display = '';
+        if (navAddEvent) navAddEvent.style.display = '';
+        if (navLogout) navLogout.style.display = '';
+      } else {
+        if (navRegister) navRegister.style.display = '';
+        if (navLogin) navLogin.style.display = '';
+        if (navRegisteredEvents) navRegisteredEvents.style.display = 'none';
+        if (navAddEvent) navAddEvent.style.display = 'none';
+        if (navLogout) navLogout.style.display = 'none';
+      }
+    }
+    function showAdminDashboardLink() {
+      const navbar = document.getElementById('navbar-links');
+      if (!navbar) return;
+      if (document.getElementById('nav-dashboard')) return; // Prevent duplicate
+      const role = localStorage.getItem('role');
+      if (role === 'admin') {
+        const dash = document.createElement('a');
+        dash.href = 'admin.html';
+        dash.id = 'nav-dashboard';
+        dash.className = 'text-gray-700 font-medium hover:text-green-700';
+        dash.textContent = 'Dashboard';
+        navbar.appendChild(dash);
+      }
+    }
+    window.addEventListener('DOMContentLoaded', function() {
+      updateNavbar();
+      showAdminDashboardLink();
+      const navLogout = document.getElementById('nav-logout');
+      if (navLogout) {
+        navLogout.onclick = function(e) {
+          e.preventDefault();
+          localStorage.removeItem('users_logged_in');
+          window.location.href = 'login.html';
+        };
+      }
+      // Load registered events
+      let regEvents = [];
+      if (localStorage.getItem('registered_events')) {
+        regEvents = JSON.parse(localStorage.getItem('registered_events'));
+      }
+      const eventsList = document.getElementById('events-list');
+      const noEvents = document.getElementById('no-events');
+      eventsList.innerHTML = '';
+      if (!regEvents.length) {
+        noEvents.classList.remove('hidden');
+        return;
+      } else {
+        noEvents.classList.add('hidden');
+      }
+      regEvents.forEach(event => {
+        eventsList.innerHTML += `
+          <div class="bg-white rounded-2xl shadow-lg p-6 flex flex-col">
+            <img src="${event.photos && event.photos.length ? event.photos[0] : 'https://images.unsplash.com/photo-1464983953574-0892a716854b?auto=format&fit=crop&w=400&q=80'}" alt="Event" class="rounded-xl w-full h-48 object-cover mb-4">
+            <h3 class="text-xl font-bold text-green-800 mb-1">${event.title}</h3>
+            <div class="text-gray-600 mb-2">${event.category || ''}</div>
+            <div class="text-gray-700 mb-2">${event.description}</div>
+            <div class="text-sm text-gray-500 mb-2"><span class="font-semibold">Location:</span> ${event.location || ''}</div>
+            <div class="text-sm text-gray-500 mb-2"><span class="font-semibold">Start:</span> ${event.start_time ? new Date(event.start_time).toLocaleString() : ''}</div>
+            <div class="text-sm text-gray-500 mb-2"><span class="font-semibold">End:</span> ${event.end_time ? new Date(event.end_time).toLocaleString() : ''}</div>
+            <div class="text-sm text-gray-500 mb-2"><span class="font-semibold">Registration:</span> ${event.registration_start ? new Date(event.registration_start).toLocaleString() : 'N/A'} - ${event.registration_end ? new Date(event.registration_end).toLocaleString() : 'N/A'}</div>
+            <div class="flex items-center gap-2 mt-2">
+              <span class="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-medium bg-green-50 text-green-700">${event.approved ? 'Approved' : 'Pending'}</span>
+            </div>
+            <div class="mt-4 p-3 rounded-lg bg-green-50 text-green-800 text-sm">
+              <div><span class="font-semibold">Registered by:</span> ${event.registered_name}</div>
+              <div><span class="font-semibold">Email:</span> ${event.registered_email}</div>
+              <div><span class="font-semibold">Registered at:</span> ${event.registered_at ? new Date(event.registered_at).toLocaleString() : ''}</div>
+            </div>
+          </div>
+        `;
+      });
+    });
+  </script>
+</body>
+</html>
